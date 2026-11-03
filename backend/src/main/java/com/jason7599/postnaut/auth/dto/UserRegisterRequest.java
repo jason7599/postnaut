@@ -19,14 +19,6 @@ public record UserRegisterRequest(
         )
         String username,
 
-        @NotNull(message = "Password is required")
-        @Size(
-                min = UserConstraints.PASSWORD_MIN_LENGTH,
-                max = UserConstraints.PASSWORD_MAX_LENGTH,
-                message = UserConstraints.PASSWORD_LENGTH_MESSAGE
-        )
-        String password,
-
         @NotNull(message = "Display name is required")
         @Size(
                 min = UserConstraints.DISPLAY_NAME_MIN_LENGTH,
@@ -37,7 +29,15 @@ public record UserRegisterRequest(
                 regexp = UserConstraints.DISPLAY_NAME_REGEX,
                 message = UserConstraints.DISPLAY_NAME_MESSAGE
         )
-        String displayName
+        String displayName,
+
+        @NotNull(message = "Password is required")
+        @Size(
+                min = UserConstraints.PASSWORD_MIN_LENGTH,
+                max = UserConstraints.PASSWORD_MAX_LENGTH,
+                message = UserConstraints.PASSWORD_LENGTH_MESSAGE
+        )
+        String password
 ) {
     public UserRegisterRequest {
         if (username != null) {

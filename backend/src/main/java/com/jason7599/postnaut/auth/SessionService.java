@@ -11,7 +11,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 class SessionService {
 
-    private static final String SESSION_PREFIX = "session:";
+    static final String SESSION_PREFIX = "session:";
 
     private final StringRedisTemplate redis;
     private final SessionTokenService tokenService;
