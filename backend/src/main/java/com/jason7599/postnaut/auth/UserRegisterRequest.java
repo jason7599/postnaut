@@ -1,4 +1,4 @@
-package com.jason7599.postnaut.auth.dto;
+package com.jason7599.postnaut.auth;
 
 import com.jason7599.postnaut.user.UserConstraints;
 import jakarta.validation.constraints.NotNull;

@@ -33,7 +33,6 @@ class UserEntity {
     private String friendCode;
 
     @CreationTimestamp
-    @Column(updatable = false)
     private Instant createdAt;
 
     public UserEntity(String username, String displayName, String passwordHash, String friendCode) {

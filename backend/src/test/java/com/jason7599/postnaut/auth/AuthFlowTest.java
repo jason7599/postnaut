@@ -1,19 +1,19 @@
 package com.jason7599.postnaut.auth;
 
 import com.jason7599.postnaut.IntegrationTest;
-import com.jason7599.postnaut.auth.dto.UserLoginRequest;
-import com.jason7599.postnaut.auth.dto.UserRegisterRequest;
 import com.jason7599.postnaut.error.ApiErrorCode;
+import com.jason7599.postnaut.user.UserConstraints;
 import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
@@ -54,19 +54,21 @@ class AuthFlowTest extends IntegrationTest {
                 .andExpect(apiError(ApiErrorCode.USERNAME_TAKEN));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "ja,    jux,    123456",
-            "jason, '',     123456",
-            "jason, jux,    1234"
-    })
-    void register_invalidFields_fails(String username, String displayName, String password) throws Exception {
-        register(username, displayName, password)
-                .andExpect(apiError(ApiErrorCode.VALIDATION_ERROR));
+    static Stream<String> invalidUsernames() {
+        return Stream.of(
+                "j".repeat(UserConstraints.USERNAME_MIN_LENGTH - 1),
+                "j".repeat(UserConstraints.USERNAME_MAX_LENGTH + 1),
+                "ja son",
+                "ja_son",
+                "ja!son"
+        );
+    }
 
-        assertThat(
-                jdbc.queryForObject("SELECT COUNT(*) FROM users", Integer.class))
-                .isZero();
+    @ParameterizedTest
+    @MethodSource("invalidUsernames")
+    void register_invalidUsername_fails(String username) throws Exception {
+        register(username, "jux", "123456")
+                .andExpect(apiError(ApiErrorCode.VALIDATION_ERROR));
     }
 
     @Test

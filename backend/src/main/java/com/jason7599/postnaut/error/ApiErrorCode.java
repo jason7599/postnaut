@@ -17,6 +17,10 @@ public enum ApiErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized"),
     USERNAME_TAKEN(HttpStatus.CONFLICT, "This username is taken"),
     BAD_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Bad credentials"),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"),
+
+    // Post
+    MAX_LIVE_POST_REACHED(HttpStatus.TOO_MANY_REQUESTS, "Live post limit reached")
     ;
 
     private final HttpStatus status;

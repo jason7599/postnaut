@@ -1,7 +1,7 @@
 package com.jason7599.postnaut.user;
 
-import com.jason7599.postnaut.auth.dto.UserLoginRequest;
-import com.jason7599.postnaut.auth.dto.UserRegisterRequest;
+import com.jason7599.postnaut.auth.UserLoginRequest;
+import com.jason7599.postnaut.auth.UserRegisterRequest;
 import com.jason7599.postnaut.error.ApiErrorCode;
 import com.jason7599.postnaut.error.ApiException;
 import com.jason7599.postnaut.error.DbConstraints;
@@ -69,5 +69,12 @@ public class UserService {
         }
 
         return user.getId();
+    }
+
+    /** Lock by user id. Doesn't contend with FK calls. Must be called within a transaction */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lock(UUID userId) {
+        userRepository.lockById(userId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
     }
 }

@@ -16,7 +16,7 @@ public final class UserConstraints {
             + USERNAME_MAX_LENGTH
             + " characters";
 
-    public static final String USERNAME_REGEX ="^(?=.*[a-z])[a-z0-9]+$";
+    public static final String USERNAME_REGEX = "^[a-z0-9]*$";
     public static final String USERNAME_REGEX_MESSAGE
             = "Username must contain only lowercase letters or digits, and at least one letter";
 

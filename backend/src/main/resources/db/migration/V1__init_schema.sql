@@ -11,8 +11,8 @@ CREATE TABLE users (
     CONSTRAINT pk_users PRIMARY KEY (id),
     CONSTRAINT uq_users_username UNIQUE (username),
     CONSTRAINT uq_users_friend_code UNIQUE (friend_code),
-    CONSTRAINT chk_users_username_length CHECK (char_length(username) BETWEEN 3 AND 32),
-    CONSTRAINT chk_users_display_name_not_blank CHECK (char_length(btrim(display_name)) > 0)
+    CONSTRAINT chk_users_username_format CHECK (username ~ '^[a-z0-9_]{3,20}$'),
+    CONSTRAINT chk_users_display_name_not_blank CHECK (display_name ~ '\S')
 );
 
 CREATE TABLE posts (
@@ -33,10 +33,11 @@ CREATE TABLE posts (
     CONSTRAINT pk_posts PRIMARY KEY (id),
     CONSTRAINT fk_posts_poster_id FOREIGN KEY (poster_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT uq_posts_poster_client UNIQUE (poster_id, client_id), -- also indexes poster_id
-    CONSTRAINT chk_posts_content_not_blank CHECK (char_length(btrim(content)) > 0),
+    CONSTRAINT chk_posts_content_not_blank CHECK (content ~ '\S'),
     CONSTRAINT chk_posts_expires_after_created CHECK (created_at < expires_at)
 );
-CREATE INDEX idx_posts_expires_at ON posts (expires_at);
+CREATE INDEX idx_posts_poster_id_expires_at ON posts (poster_id, expires_at);
+CREATE INDEX idx_posts_poster_id_created_at_id ON posts (poster_id, created_at DESC, id DESC);
 
 CREATE TABLE views (
     user_id     UUID     NOT NULL,
