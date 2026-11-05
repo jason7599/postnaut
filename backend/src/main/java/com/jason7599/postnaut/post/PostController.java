@@ -5,6 +5,7 @@ import com.jason7599.postnaut.common.PageResponse;
 import com.jason7599.postnaut.post.dto.CreatePostRequest;
 import com.jason7599.postnaut.post.dto.MyPostResponse;
 import com.jason7599.postnaut.post.dto.RandomPostResponse;
+import com.jason7599.postnaut.post.dto.SetReactionRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,25 @@ class PostController {
     ) {
         return postService.getUserPosts(authUser.userId(), cursor, filter);
     }
-    
+
+    @PutMapping("/{postId}/view")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void recordView(
+            @AuthenticationPrincipal UUID userId,
+            @PathVariable UUID postId
+    ) {
+        postService.recordView(userId, postId);
+    }
+
+    @PutMapping("/{postId}/reaction")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void setReaction(
+            @AuthenticationPrincipal UUID userId,
+            @PathVariable UUID postId,
+            @RequestBody @Valid SetReactionRequest request
+    ) {
+        postService.setReaction(userId, postId, request);
+    }
 
     @GetMapping("/random")
     ResponseEntity<RandomPostResponse> getRandom(@AuthenticationPrincipal AuthUser authUser) {

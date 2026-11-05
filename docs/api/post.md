@@ -191,3 +191,136 @@ There are no posts left to show. The response has no body.
 | Code | Status | When |
 | - | - | - |
 | `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |
+
+---
+
+## Get My Posts
+
+Returns the caller's posts, newest first, including expired posts.
+
+```
+GET /api/posts/mine
+```
+
+Requires a valid session cookie.
+
+### Query Parameters
+
+| Field | Type | Required | Rules |
+| - | - | - | - |
+| `cursor` | UUID | No | `nextCursor` from the previous page. Omit for the first page |
+| `limit` | integer | No | 1 ~ 50. Defaults to 20 |
+| `status` | string | No | `ALL`, `LIVE`, or `EXPIRED`. Defaults to `ALL` |
+
+### Response
+
+`200 OK`
+
+| Field | Type | Description |
+| - | - | - |
+| `items` | array | Posts in this page |
+| `nextCursor` | UUID or null | Cursor for the next page. `null` on the last page |
+
+Each item contains:
+
+| Field | Type | Description |
+| - | - | - |
+| `id` | UUID | |
+| `content` | string | |
+| `revealToFriends` | boolean | |
+| `replyEnabled` | boolean | |
+| `createdAt` | timestamp | ISO-8601, UTC |
+| `expiresAt` | timestamp | ISO-8601, UTC |
+| `viewCount` | integer | |
+| `likeCount` | integer | |
+| `dislikeCount` | integer | |
+| `chainCount` | integer | Number of reply chains |
+| `unreadChainCount` | integer | Chains with a reply the poster hasn't read |
+
+```json
+{
+  "items": [
+    {
+      "id": "0190f3a2-9e10-7c3d-8a21-6d4b0f7e2c55",
+      "content": "Hello!",
+      "revealToFriends": true,
+      "replyEnabled": true,
+      "createdAt": "2026-11-04T09:30:00Z",
+      "expiresAt": "2026-11-05T09:30:00Z",
+      "viewCount": 12,
+      "likeCount": 4,
+      "dislikeCount": 1,
+      "chainCount": 2,
+      "unreadChainCount": 1
+    }
+  ],
+  "nextCursor": "0190f3a2-9e10-7c3d-8a21-6d4b0f7e2c55"
+}
+```
+
+### Errors
+
+| Status | Code | When |
+| - | - | - |
+| `400` | `VALIDATION_FAILED` | `cursor`, `limit`, or `status` is invalid |
+| `401` | `UNAUTHORIZED` | The session is missing, invalid, or expired |
+
+## Record View
+
+Records that the caller viewed a post. Repeating this request has no further effect.
+
+```
+PUT /api/posts/{postId}/view
+```
+
+Requires a valid session cookie.
+
+### Response
+
+`204 No Content`
+
+### Errors
+
+| Status | Code | When |
+| - | - | - |
+| `400` | `VALIDATION_FAILED` | `postId` is not a valid UUID |
+| `401` | `UNAUTHORIZED` | The session is missing, invalid, or expired |
+| `403` | `CANNOT_INTERACT_WITH_OWN_POST` | The post belongs to the caller |
+| `404` | `POST_NOT_FOUND` | The post doesn't exist or has expired |
+
+---
+
+## Set Reaction
+
+Sets the caller's reaction to a post, and records a view if there isn't one yet. Repeating this request has no further effect.
+
+```
+PUT /api/posts/{postId}/reaction
+```
+
+Requires a valid session cookie.
+
+### Request
+
+| Field | Type | Required | Rules |
+| - | - | - | - |
+| `reaction` | string | Yes | `LIKE`, `DISLIKE`, or `NONE`. `NONE` removes the reaction |
+
+```json
+{
+  "reaction": "LIKE"
+}
+```
+
+### Response
+
+`204 No Content`
+
+### Errors
+
+| Status | Code | When |
+| - | - | - |
+| `400` | `VALIDATION_FAILED` | `postId` or `reaction` is missing or invalid |
+| `401` | `UNAUTHORIZED` | The session is missing, invalid, or expired |
+| `403` | `CANNOT_INTERACT_WITH_OWN_POST` | The post belongs to the caller |
+| `404` | `POST_NOT_FOUND` | The post doesn't exist or has expired |
