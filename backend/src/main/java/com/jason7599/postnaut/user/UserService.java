@@ -1,7 +1,7 @@
 package com.jason7599.postnaut.user;
 
-import com.jason7599.postnaut.auth.UserLoginRequest;
-import com.jason7599.postnaut.auth.UserRegisterRequest;
+import com.jason7599.postnaut.auth.dto.UserLoginRequest;
+import com.jason7599.postnaut.auth.dto.UserRegisterRequest;
 import com.jason7599.postnaut.error.ApiErrorCode;
 import com.jason7599.postnaut.error.ApiException;
 import com.jason7599.postnaut.error.DbConstraints;

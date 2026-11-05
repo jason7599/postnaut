@@ -1,5 +1,6 @@
-package com.jason7599.postnaut.post;
+package com.jason7599.postnaut.post.dto;
 
+import com.jason7599.postnaut.post.PostConstraints;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -3,6 +3,8 @@ package com.jason7599.postnaut.post;
 import com.jason7599.postnaut.IntegrationTest;
 import com.jason7599.postnaut.common.PageResponse;
 import com.jason7599.postnaut.error.ApiErrorCode;
+import com.jason7599.postnaut.post.dto.CreatePostRequest;
+import com.jason7599.postnaut.post.dto.MyPostResponse;
 import com.jason7599.postnaut.support.UserFixtures;
 import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
@@ -113,7 +115,7 @@ class PostFlowTest extends IntegrationTest {
     }
 
     @Test
-    void getUserPosts_valid_normal() throws Exception {
+    void getMyPosts_valid_normal() throws Exception {
         TestUser user = users.create("jason");
         int postCount = PostConstraints.MAX_LIVE_POSTS;
 
@@ -134,6 +136,11 @@ class PostFlowTest extends IntegrationTest {
             String expected = String.valueOf(postCount - 1 - i);
             assertThat(page.items().get(i).content()).isEqualTo(expected);
         }
+    }
+
+    @Test
+    void getMyPosts_filter_normal() throws Exception {
+
     }
 
     private void assertPostCount(int count) {
@@ -181,5 +188,16 @@ class PostFlowTest extends IntegrationTest {
                 .toUriString();
 
         return get(path, session);
+    }
+
+    private void expirePost(UUID postId) {
+        assertThat(
+                jdbc.update("""
+                    UPDATE posts
+                    SET created_at = created_at - INTERVAL '30 days',
+                        expires_at = NOW() - INTERVAL '1 second'
+                    WHERE id = ?
+                """, postId)
+        ).isEqualTo(1);
     }
 }

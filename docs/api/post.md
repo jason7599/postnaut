@@ -64,6 +64,8 @@ Retrying with the same `clientId` returns the original post with the same status
 | `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |
 | `MAX_LIVE_POST_REACHED` | `429` | The user has reached the live post cap |
 
+---
+
 ## Get My Posts
 
 Returns a page of the current user's posts, newest first.
@@ -140,4 +142,52 @@ When `hasMore` is `true`, get the next page by passing the `id` of the last item
 | Code | Status | When |
 | - | - | - |
 | `VALIDATION_FAILED` | `400` | `cursor` or `filter` is invalid |
+| `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |
+
+---
+
+## Get Random Post
+
+Returns a random live post that the current user hasn't viewed yet.
+
+```
+GET /api/posts/random
+```
+
+Requires a valid session cookie.
+
+The result never includes the user's own posts, or posts from friends that have `revealToFriends` enabled.
+
+Fetching a post doesn't record a view, so the same post may be returned again until a view is recorded.
+
+### Response
+
+`200 OK`
+
+| Field | Type | Description |
+| - | - | - |
+| `id` | UUID | |
+| `content` | string | |
+| `replyEnabled` | boolean | |
+| `createdAt` | timestamp | ISO-8601, UTC |
+| `expiresAt` | timestamp | ISO-8601, UTC |
+
+```json
+{
+  "id": "0190f3a2-9e10-7c3d-8a21-6d4b0f7e2c55",
+  "content": "Hello!",
+  "replyEnabled": true,
+  "createdAt": "2026-11-04T09:30:00Z",
+  "expiresAt": "2026-11-05T09:30:00Z"
+}
+```
+
+`204 No Content`
+
+There are no posts left to show. The response has no body.
+
+### Errors
+
+| Code | Status | When |
+| - | - | - |
 | `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |

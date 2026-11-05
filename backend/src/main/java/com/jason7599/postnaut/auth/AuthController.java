@@ -1,5 +1,7 @@
 package com.jason7599.postnaut.auth;
 
+import com.jason7599.postnaut.auth.dto.UserLoginRequest;
+import com.jason7599.postnaut.auth.dto.UserRegisterRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

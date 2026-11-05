@@ -1,5 +1,6 @@
 package com.jason7599.postnaut.error;
 
+import com.jason7599.postnaut.error.dto.ApiErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

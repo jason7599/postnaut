@@ -1,4 +1,6 @@
-package com.jason7599.postnaut.error;
+package com.jason7599.postnaut.error.dto;
+
+import com.jason7599.postnaut.error.ApiErrorCode;
 
 public record ApiErrorResponse(
         ApiErrorCode code,

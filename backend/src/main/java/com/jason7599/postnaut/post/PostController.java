@@ -2,9 +2,13 @@ package com.jason7599.postnaut.post;
 
 import com.jason7599.postnaut.auth.AuthUser;
 import com.jason7599.postnaut.common.PageResponse;
+import com.jason7599.postnaut.post.dto.CreatePostRequest;
+import com.jason7599.postnaut.post.dto.MyPostResponse;
+import com.jason7599.postnaut.post.dto.RandomPostResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +37,12 @@ class PostController {
             @RequestParam(defaultValue = "ALL") PostStatusFilter filter
     ) {
         return postService.getUserPosts(authUser.userId(), cursor, filter);
+    }
+
+    @GetMapping("/random")
+    ResponseEntity<RandomPostResponse> getRandom(@AuthenticationPrincipal AuthUser authUser) {
+        return postService.fetchRandomPost(authUser.userId())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 }

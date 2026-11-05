@@ -36,4 +36,8 @@ class PostEntity {
     private Instant createdAt;
 
     private Instant expiresAt;
+
+    boolean isExpired() {
+        return !Instant.now().isBefore(expiresAt);
+    }
 }

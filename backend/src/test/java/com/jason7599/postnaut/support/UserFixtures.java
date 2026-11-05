@@ -1,6 +1,6 @@
 package com.jason7599.postnaut.support;
 
-import com.jason7599.postnaut.auth.UserRegisterRequest;
+import com.jason7599.postnaut.auth.dto.UserRegisterRequest;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.test.context.TestComponent;

@@ -1,7 +1,7 @@
 package com.jason7599.postnaut.auth;
 
 import com.jason7599.postnaut.error.ApiErrorCode;
-import com.jason7599.postnaut.error.ApiErrorResponse;
+import com.jason7599.postnaut.error.dto.ApiErrorResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,5 +1,7 @@
 package com.jason7599.postnaut.post;
 
+import com.jason7599.postnaut.post.dto.MyPostResponse;
+import com.jason7599.postnaut.post.dto.RandomPostResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -108,7 +110,7 @@ interface PostRepository extends JpaRepository<PostEntity, UUID> {
     """, nativeQuery = true)
     int insertView(UUID postId, UUID userId);
 
-    /** No-op if already exists or post is expired */
+    /** No-op if the post is expired or the reaction is unchanged */
     @Modifying
     @Query(value = """
         INSERT INTO views (post_id, user_id, reaction)
@@ -118,7 +120,37 @@ interface PostRepository extends JpaRepository<PostEntity, UUID> {
             AND expires_at > NOW()
         ON CONFLICT (post_id, user_id)
         DO UPDATE SET reaction = EXCLUDED.reaction
-        WHERE reaction IS DISTINCT FROM EXCLUDED.reaction
+        WHERE views.reaction IS DISTINCT FROM EXCLUDED.reaction
     """, nativeQuery = true)
     int setReaction(UUID postId, UUID userId, int reaction);
+
+    @Query(value = """
+        SELECT
+            p.id,
+            p.content,
+            p.reply_enabled,
+            p.created_at,
+            p.expires_at
+        FROM posts p
+        WHERE p.expires_at > NOW()
+            AND p.poster_id <> :viewerId
+            AND NOT EXISTS (
+                SELECT 1
+                FROM views v
+                WHERE v.post_id = p.id
+                    AND v.user_id = :viewerId
+            )
+            AND (
+                NOT p.reveal_to_friends
+                OR NOT EXISTS (
+                    SELECT 1
+                    FROM friends f
+                    WHERE f.owner_id = :viewerId
+                        AND f.friend_id = p.poster_id -- table symmetry is enforced by fk
+                )
+            )
+        ORDER BY random()
+        LIMIT 1
+    """, nativeQuery = true)
+    Optional<RandomPostResponse> getRandomPost(UUID viewerId);
 }

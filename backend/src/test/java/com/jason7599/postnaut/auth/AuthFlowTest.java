@@ -1,6 +1,8 @@
 package com.jason7599.postnaut.auth;
 
 import com.jason7599.postnaut.IntegrationTest;
+import com.jason7599.postnaut.auth.dto.UserLoginRequest;
+import com.jason7599.postnaut.auth.dto.UserRegisterRequest;
 import com.jason7599.postnaut.error.ApiErrorCode;
 import com.jason7599.postnaut.user.UserConstraints;
 import jakarta.servlet.http.Cookie;

@@ -3,6 +3,10 @@ package com.jason7599.postnaut.post;
 import com.jason7599.postnaut.common.PageResponse;
 import com.jason7599.postnaut.error.ApiErrorCode;
 import com.jason7599.postnaut.error.ApiException;
+import com.jason7599.postnaut.post.dto.CreatePostRequest;
+import com.jason7599.postnaut.post.dto.MyPostResponse;
+import com.jason7599.postnaut.post.dto.RandomPostResponse;
+import com.jason7599.postnaut.post.dto.SetReactionRequest;
 import com.jason7599.postnaut.user.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 // @Validated:
@@ -99,10 +104,7 @@ public class PostService {
 
     @Transactional
     public void recordView(UUID postId, UUID userId) {
-        // No need to distinguish an expired post from a non-existent one
-        if (!postRepository.isPostActive(postId)) {
-            throw new ApiException(ApiErrorCode.POST_NOT_FOUND);
-        }
+        assertPostNotExpiredAndNotMine(postId, userId);
 
         // Technically TOCTOU. Post might've been deleted or expired after the check above
         // But still safe, as the insertion no-ops in those cases too.
@@ -113,13 +115,29 @@ public class PostService {
 
     @Transactional
     public void setReaction(UUID postId, UUID userId, @NotNull @Valid SetReactionRequest request) {
-        if (!postRepository.isPostActive(postId)) {
-            throw new ApiException(ApiErrorCode.POST_NOT_FOUND);
-        }
+        assertPostNotExpiredAndNotMine(postId, userId);
 
         // Again, TOCTOU, but same as above. Nothing breaks.
         if (postRepository.setReaction(postId, userId, request.reaction().getReactionvalue()) != 0) {
             // If this matters later.
+        }
+    }
+
+    public Optional<RandomPostResponse> fetchRandomPost(UUID viewerId) {
+        return postRepository.getRandomPost(viewerId);
+    }
+
+    private void assertPostNotExpiredAndNotMine(UUID postId, UUID userId) {
+        PostEntity post = postRepository.findById(postId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.POST_NOT_FOUND));
+
+        // No need to distinguish an expired post from a non-existent one.
+        if (post.isExpired()) {
+            throw new ApiException(ApiErrorCode.POST_NOT_FOUND);
+        }
+
+        if (userId.equals(post.getPosterId())) {
+            throw new ApiException(ApiErrorCode.CANNOT_INTERACT_WITH_OWN_POST);
         }
     }
 }

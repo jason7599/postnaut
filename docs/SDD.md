@@ -15,17 +15,17 @@ No public usernames, profiles or post histories. Only the poster can access thei
 - **Content**: Either text and/or an image. No editing after posting.
 - **Lifespan**: Users select a fixed lifespan between a minimum and maximum(exact values TBD) at post time, which is how long the post stays public. Once expired, other users will not see the post, nor be able to leave a reply or like/dislike the post. The poster however can access their post history.
 - **Visibility**: By default, users can see the nickname of the poster if the poster is in their friend list. However, the poster can choose to be completely anonymous to override this behavior. 
-- **Likes and Dislikes**: Users can leave likes and dislikes on a post. Like and dislike counts are public; who reacted is never shown.
+- **Likes and Dislikes**: Users can leave likes and dislikes on a post. 
 - **Enable Replies**: Users can disable replies on a post, at creation time. No changing after posting. 
 
 ### Replies
-Users can leave a text reply on a post. Each user has at most one reply thread per post. The replier's identity is never revealed to the poster, and only the poster sees the list of replies. The poster can remove replies.
+Users can leave a text reply on a post. Each user has at most one reply thread per post. The replier's identity is never revealed to the poster, and only the poster sees the count and the list of replies. The poster can remove replies.
 
 ### Reply Chain
 The poster can answer a reply, and the replier can answer back, forming a private thread. Messages strictly alternate: neither side can send twice in a row. The replier always sends first. The thread closes when the post expires.
 
 ### Post Feed
-Once the user scrolls pass a post, it counts as a view, and their feed will never show it again. Each post maintains a view count, which is public to everyone. The feed never shows a post by the viewing user. 
+Once the user scrolls pass a post, it counts as a view, and their feed will never show it again. The feed never shows a post by the viewing user. 
 
 ### Replied Posts
 A separate menu lists the non-expired posts a user as replied to, with the reply chain.

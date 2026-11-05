@@ -1,4 +1,4 @@
-package com.jason7599.postnaut.post;
+package com.jason7599.postnaut.post.dto;
 
 import java.time.Instant;
 import java.util.UUID;
