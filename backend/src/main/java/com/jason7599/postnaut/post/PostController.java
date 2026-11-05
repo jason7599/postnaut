@@ -38,6 +38,7 @@ class PostController {
     ) {
         return postService.getUserPosts(authUser.userId(), cursor, filter);
     }
+    
 
     @GetMapping("/random")
     ResponseEntity<RandomPostResponse> getRandom(@AuthenticationPrincipal AuthUser authUser) {

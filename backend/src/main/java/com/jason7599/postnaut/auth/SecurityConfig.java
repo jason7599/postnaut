@@ -28,7 +28,7 @@ import java.util.List;
 @Configuration
 class SecurityConfig {
 
-    @Value("${app.frontend-origin")
+    @Value("${app.frontend-origin}")
     private String frontendOrigin;
 
     @Bean

@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* Design tokens. Tailwind turns these into classes like bg-panel and text-mist. */
+@theme {
+  --color-night: #15123d;
+  --color-dusk: #2c2573;
+  --color-horizon: #5a48b0;
+  --color-panel: #231e5e;
+  --color-line: #4a4299;
+  --color-mist: #e8e5ff;
+  --color-haze: #b9b4e8;
+  --color-lilac: #c4a1f5;
+  --color-blush: #ff9dbd;
+  --color-rose: #a81e58;
+  --color-cloud: #f6f4ff;
+  --color-cloud-low: #cdd2fa;
+  --color-ink: #1b1650;
+
+  --font-sans: "Figtree Variable", "Apple SD Gothic Neo", "Malgun Gothic",
+    "Noto Sans KR", system-ui, sans-serif;
+  /* Post text. Korean posts use a system serif that matches it. */
+  --font-post: "Newsreader Variable", "Noto Serif KR", "Nanum Myeongjo",
+    "AppleMyungjo", Batang, Georgia, serif;
+}
+
+@layer base {
+  html {
+    background: var(--color-night);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    color: var(--color-mist);
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-lilac);
+    outline-offset: 2px;
+  }
+}
+
+/*
+  The post cloud. The rounded box holds the content and the .puff spans stick
+  out of it. It shades toward the bottom like the cloud in the logo.
+*/
+.cloud {
+  position: relative;
+  isolation: isolate;
+  color: var(--color-ink);
+  filter: drop-shadow(0 20px 36px rgb(10 8 40 / 0.55));
+}
+
+.cloud :focus-visible {
+  outline-color: var(--color-ink);
+}
+
+.cloud-body {
+  position: relative;
+  border-radius: 2.5rem;
+  background: linear-gradient(var(--color-cloud) 45%, var(--color-cloud-low));
+}
+
+.puff {
+  position: absolute;
+  z-index: -1;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-cloud);
+}
+
+.puff-low {
+  background: var(--color-cloud-low);
+}
+
+/* Dark surface for forms, lists and navigation. */
+.panel {
+  border: 1px solid var(--color-line);
+  border-radius: 1.5rem;
+  background: var(--color-panel);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  background: var(--color-lilac);
+  color: var(--color-ink);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms;
+}
+
+.button:hover:not(:disabled) {
+  background: #d3b8f9;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-quiet {
+  border: 1px solid var(--color-line);
+  background: var(--color-panel);
+  color: var(--color-mist);
+}
+
+.button-quiet:hover:not(:disabled) {
+  background: #2e2876;
+}
+
+.field {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  background: var(--color-night);
+  /* 16px stops iOS Safari zooming the page when a field is focused. */
+  font-size: 1rem;
+}
+
+.fade-in-late {
+  animation: fade-in 200ms 300ms both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-late {
+    animation: none;
+  }
+  .button {
+    transition: none;
+  }
+}
