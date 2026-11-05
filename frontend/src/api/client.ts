@@ -12,7 +12,7 @@ export class ApiError extends Error {
 }
 
 type RequestOptions = {
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "PUT";
   body?: unknown;
 };
 
@@ -69,7 +69,9 @@ async function readError(response: Response) {
 const messages: Record<string, string> = {
   BAD_CREDENTIALS: "That username and password don't match.",
   MAX_LIVE_POST_REACHED: "You've reached the limit for live posts. Wait for one to expire, then try again.",
+  CANNOT_INTERACT_WITH_OWN_POST: "You can't react to your own post.",
   NETWORK_ERROR: "Couldn't reach Postnaut. Check your connection and try again.",
+  POST_NOT_FOUND: "This post has expired.",
   USERNAME_TAKEN: "That username is taken. Try another one.",
   VALIDATION_ERROR: "Check what you entered and try again.",
   VALIDATION_FAILED: "Check what you entered and try again.",

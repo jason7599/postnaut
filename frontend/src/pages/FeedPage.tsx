@@ -1,15 +1,10 @@
-import { ArrowRight } from "lucide-react";
-import { AnimatePresence, motion, type PanInfo } from "motion/react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { errorMessage } from "../api/client";
 import type { FeedPost } from "../api/posts";
 import { CloudCard } from "../components/CloudCard";
+import { ReactionButtons } from "../components/ReactionButtons";
 import { useFeed } from "../hooks/useFeed";
 import { timeLeft } from "../lib/time";
-
-const SWIPE_DISTANCE = 100;
-const SWIPE_SPEED = 500;
 
 // Short posts get big type. Long ones shrink so they still fit on a phone.
 function textSize(content: string) {
@@ -18,51 +13,34 @@ function textSize(content: string) {
   return "text-base md:text-lg";
 }
 
-const cardMotion = {
-  enter: { opacity: 0, scale: 0.92 },
-  center: { opacity: 1, scale: 1, x: 0, rotate: 0 },
-  exit: (direction: number) => ({ opacity: 0, x: direction * 600, rotate: direction * 10 }),
-};
-
 function PostCard({ post }: { post: FeedPost }) {
   return (
-    <CloudCard className="flex min-h-72 flex-col justify-center px-7 py-10 md:min-h-80 md:px-12">
-      <p className={`font-post leading-snug wrap-anywhere break-keep whitespace-pre-wrap ${textSize(post.content)}`}>{post.content}</p>
-      <p className="mt-6 text-sm text-ink/70">{timeLeft(post.expiresAt)}</p>
-    </CloudCard>
+    <div className="post-in w-full">
+      <CloudCard className="flex min-h-72 flex-col px-7 pt-8 pb-5 md:min-h-80 md:px-12">
+        <div className="flex flex-1 items-center">
+          <p className={`font-post leading-snug wrap-anywhere break-keep whitespace-pre-wrap ${textSize(post.content)}`}>{post.content}</p>
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-4">
+          <p className="text-sm text-ink/70">{timeLeft(post.expiresAt)}</p>
+          <ReactionButtons postId={post.id} />
+        </div>
+      </CloudCard>
+    </div>
   );
 }
 
 export function FeedPage() {
   const feed = useFeed();
-  const [direction, setDirection] = useState(1);
-  const canAdvance = Boolean(feed.post);
-
-  function advance(nextDirection: number) {
-    if (!canAdvance) return;
-    setDirection(nextDirection);
-    feed.next();
-  }
-
-  function handleDragEnd(_event: unknown, info: PanInfo) {
-    const swiped = Math.abs(info.offset.x) > SWIPE_DISTANCE || Math.abs(info.velocity.x) > SWIPE_SPEED;
-    if (swiped) advance(info.offset.x > 0 ? 1 : -1);
-  }
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "ArrowRight") advance(1);
-      if (event.key === "ArrowLeft") advance(-1);
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-16 py-8">
+    <main className={`mx-auto flex w-full max-w-xl flex-1 flex-col items-center gap-10 md:gap-12 ${feed.data === null ? "justify-center" : ""}`}>
       <h1 className="sr-only">Feed</h1>
 
-      <div className="grid min-h-72 w-full place-items-center *:col-start-1 *:row-start-1">
+      {feed.data !== null && !feed.isError && (
+        <img src="/mascot.png" alt="" width={320} height={395} className="-mb-11 h-32 w-auto md:-mb-14 md:h-36" />
+      )}
+
+      <div className="grid min-h-72 w-full place-items-center md:min-h-80">
         {feed.isPending && <p role="status" className="fade-in-late text-haze">Finding a post…</p>}
 
         {feed.isError && (
@@ -74,41 +52,22 @@ export function FeedPage() {
 
         {feed.data === null && (
           <CloudCard className="grid w-full justify-items-center gap-4 px-7 py-8 text-center">
-            <img src="/mascot.png" alt="" width={320} height={321} className="h-24 w-auto" />
+            <img src="/mascot.png" alt="" width={320} height={395} className="h-24 w-auto" />
             <h2 className="text-xl font-bold text-balance">You've read every post up here</h2>
             <p>Check back later, or send one up yourself.</p>
             <Link to="/write" className="button">Write a post</Link>
           </CloudCard>
         )}
 
-        <AnimatePresence mode="wait" custom={direction}>
-          {feed.post && (
-            <motion.div
-              key={feed.post.id}
-              className="w-full cursor-grab select-none active:cursor-grabbing"
-              custom={direction}
-              variants={cardMotion}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.22 }}
-              drag="x"
-              dragSnapToOrigin
-              dragElastic={0.8}
-              onDragEnd={handleDragEnd}
-            >
-              <PostCard post={feed.post} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {feed.post && <PostCard key={feed.post.id} post={feed.post} />}
       </div>
 
       {feed.data !== null && !feed.isError && (
         <div className="grid justify-items-center gap-2">
-          <button className="button button-quiet" onClick={() => advance(1)} disabled={!canAdvance}>
-            Next post <ArrowRight size={18} aria-hidden />
+          {feed.nextError && <p role="alert" className="text-blush">{errorMessage(feed.nextError)}</p>}
+          <button className="button button-quiet" onClick={feed.next} disabled={!feed.post || feed.isMovingOn}>
+            Next post
           </button>
-          <p className="text-sm text-haze max-md:hidden">Or swipe, or press the arrow keys</p>
         </div>
       )}
     </main>

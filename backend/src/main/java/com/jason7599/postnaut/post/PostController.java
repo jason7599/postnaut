@@ -43,20 +43,20 @@ class PostController {
     @PutMapping("/{postId}/view")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void recordView(
-            @AuthenticationPrincipal UUID userId,
+            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable UUID postId
     ) {
-        postService.recordView(userId, postId);
+        postService.recordView(postId, authUser.userId());
     }
 
     @PutMapping("/{postId}/reaction")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void setReaction(
-            @AuthenticationPrincipal UUID userId,
+            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable UUID postId,
             @RequestBody @Valid SetReactionRequest request
     ) {
-        postService.setReaction(userId, postId, request);
+        postService.setReaction(postId, authUser.userId(), request);
     }
 
     @GetMapping("/random")

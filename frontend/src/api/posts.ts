@@ -12,6 +12,7 @@ export const LIFESPANS = [
 
 export type Lifespan = (typeof LIFESPANS)[number]["value"];
 export type PostFilter = "ALL" | "LIVE" | "EXPIRED";
+export type Reaction = "LIKE" | "DISLIKE" | "NONE";
 
 export const MAX_POST_LENGTH = 500;
 
@@ -60,6 +61,8 @@ export function getMyPosts(filter: PostFilter, cursor?: string) {
 // Resolves to undefined when the backend answers 204, meaning no posts are left.
 export const getRandomPost = () => request<FeedPost | undefined>("/posts/random");
 
-// TODO: call the backend here once it has an endpoint for recording a view.
-// Until then, the feed only remembers viewed posts until the page is refreshed.
-export async function recordView(_postId: string) {}
+export const recordView = (postId: string) =>
+  request<void>(`/posts/${postId}/view`, { method: "PUT" });
+
+export const setReaction = (postId: string, reaction: Reaction) =>
+  request<void>(`/posts/${postId}/reaction`, { method: "PUT", body: { reaction } });

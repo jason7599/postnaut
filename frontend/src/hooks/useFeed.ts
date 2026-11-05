@@ -1,38 +1,40 @@
-import { useQuery } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { ApiError } from "../api/client";
 import { getRandomPost, recordView } from "../api/posts";
 
-// The backend can return the same post until its view is recorded, so a repeat
-// is skipped and another one requested a few times before giving up.
-const MAX_ATTEMPTS = 5;
-
-async function fetchUnseenPost(seen: Set<string>) {
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const post = await getRandomPost();
-    if (!post) return null;
-    if (!seen.has(post.id)) return post;
-  }
-  return null;
+// These mean the post can't be viewed, so the feed should just move on.
+function canSkip(error: unknown) {
+  return error instanceof ApiError && (error.code === "POST_NOT_FOUND" || error.code === "CANNOT_INTERACT_WITH_OWN_POST");
 }
 
 export function useFeed() {
-  const seen = useRef(new Set<string>());
   const [position, setPosition] = useState(0);
 
   const query = useQuery({
     queryKey: ["feed", position],
-    queryFn: () => fetchUnseenPost(seen.current),
+    queryFn: async () => (await getRandomPost()) ?? null,
     staleTime: Infinity,
     gcTime: 0,
   });
 
-  function next() {
-    if (query.data) {
-      seen.current.add(query.data.id);
-      void recordView(query.data.id);
-    }
-    setPosition((current) => current + 1);
-  }
+  const showNextPost = () => setPosition((current) => current + 1);
 
-  return { ...query, post: query.data, next };
+  // The view is saved before the next post is requested, otherwise the backend
+  // could send the same post again.
+  const view = useMutation({
+    mutationFn: recordView,
+    onSuccess: showNextPost,
+    onError: (error) => {
+      if (canSkip(error)) showNextPost();
+    },
+  });
+
+  return {
+    ...query,
+    post: query.data,
+    next: () => query.data && view.mutate(query.data.id),
+    isMovingOn: view.isPending,
+    nextError: view.isError && !canSkip(view.error) ? view.error : null,
+  };
 }
