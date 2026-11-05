@@ -63,3 +63,81 @@ Retrying with the same `clientId` returns the original post with the same status
 | `VALIDATION_FAILED` | `400` | A field is missing or invalid |
 | `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |
 | `MAX_LIVE_POST_REACHED` | `429` | The user has reached the live post cap |
+
+## Get My Posts
+
+Returns a page of the current user's posts, newest first.
+
+```
+GET /api/posts/mine
+```
+
+Requires a valid session cookie.
+
+### Query Parameters
+
+| Parameter | Type | Required | Rules |
+| - | - | - | - |
+| `cursor` | UUID | No | `id` of the last post from the previous page. Omit to get the first page |
+| `filter` | string | No | `ALL`, `LIVE`, or `EXPIRED`. Defaults to `ALL` |
+
+```
+GET /api/posts/mine?filter=LIVE&cursor=0190f3a2-9e10-7c3d-8a21-6d4b0f7e2c55
+```
+
+### Response
+
+`200 OK`
+
+| Field | Type | Description |
+| - | - | - |
+| `items` | array | Posts on this page, newest first. Empty if no posts match |
+| `hasMore` | boolean | Whether more posts are available after this page |
+
+Each item in `items` has the following fields:
+
+| Field | Type | Description |
+| - | - | - |
+| `id` | UUID | |
+| `content` | string | |
+| `revealToFriends` | boolean | |
+| `replyEnabled` | boolean | |
+| `createdAt` | timestamp | ISO-8601, UTC |
+| `expiresAt` | timestamp | ISO-8601, UTC |
+| `viewCount` | number | Total views |
+| `likeCount` | number | Total likes |
+| `dislikeCount` | number | Total dislikes |
+| `replyChainCount` | number | Total reply chains |
+| `unreadChainCount` | number | Reply chains with messages the user hasn't read |
+| `isExpired` | boolean | Whether the post has expired |
+
+```json
+{
+  "items": [
+    {
+      "id": "0190f3a2-9e10-7c3d-8a21-6d4b0f7e2c55",
+      "content": "Hello!",
+      "revealToFriends": true,
+      "replyEnabled": true,
+      "createdAt": "2026-11-04T09:30:00Z",
+      "expiresAt": "2026-11-05T09:30:00Z",
+      "viewCount": 42,
+      "likeCount": 12,
+      "dislikeCount": 1,
+      "replyChainCount": 3,
+      "unreadChainCount": 1,
+      "isExpired": false
+    }
+  ],
+  "hasMore": false
+}
+```
+
+When `hasMore` is `true`, get the next page by passing the `id` of the last item as `cursor`. Keep the same `filter` across pages.
+
+### Errors
+
+| Code | Status | When |
+| - | - | - |
+| `VALIDATION_FAILED` | `400` | `cursor` or `filter` is invalid |
+| `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |
