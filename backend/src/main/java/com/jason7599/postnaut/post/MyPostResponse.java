@@ -9,16 +9,12 @@ public record MyPostResponse(
         boolean revealToFriends,
         boolean replyEnabled,
         Instant createdAt,
-        Instant expiresAt
+        Instant expiresAt,
+        int viewCount,
+        int likeCount,
+        int dislikeCount,
+        int replyChainCount,
+        int unreadChainCount,
+        boolean isExpired       // FE could derive this using expiresAt, but let's have the backend be the only source of truth
 ) {
-    MyPostResponse(PostEntity e) {
-        this(
-                e.getId(),
-                e.getContent(),
-                e.isRevealToFriends(),
-                e.isReplyEnabled(),
-                e.getCreatedAt(),
-                e.getExpiresAt()
-        );
-    }
 }

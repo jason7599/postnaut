@@ -7,7 +7,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
+
+import java.nio.charset.StandardCharsets;
 
 @TestComponent
 @RequiredArgsConstructor
@@ -34,5 +37,13 @@ public class TestClient {
         if (cookie != null) request.cookie(cookie);
 
         return mvc.perform(request);
+    }
+
+    public <T> T read(ResultActions result, TypeReference<T> type) throws Exception {
+        String json = result.andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        return objectMapper.readValue(json, type);
     }
 }

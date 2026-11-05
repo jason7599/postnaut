@@ -36,8 +36,4 @@ class PostEntity {
     private Instant createdAt;
 
     private Instant expiresAt;
-
-    private int viewCount;
-    private int likeCount;
-    private int dislikeCount;
 }

@@ -62,4 +62,4 @@ Retrying with the same `clientId` returns the original post with the same status
 | - | - | - |
 | `VALIDATION_FAILED` | `400` | A field is missing or invalid |
 | `UNAUTHORIZED` | `401` | The session is missing, invalid, or expired |
-| `MAX_LIVE_POST_REACHED` | `409` | The user has reached the live post cap |
+| `MAX_LIVE_POST_REACHED` | `429` | The user has reached the live post cap |

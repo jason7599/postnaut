@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.core.type.TypeReference;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,6 +60,10 @@ public abstract class IntegrationTest {
 
     protected ResultActions get(String path, Cookie cookie) throws Exception {
         return testClient.get(path, cookie);
+    }
+
+    protected <T> T read(ResultActions result, TypeReference<T> type) throws Exception {
+        return testClient.read(result, type);
     }
 
     protected static ResultMatcher apiError(ApiErrorCode code) {

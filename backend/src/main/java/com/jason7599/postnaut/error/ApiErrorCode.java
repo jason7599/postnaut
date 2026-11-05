@@ -20,8 +20,8 @@ public enum ApiErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"),
 
     // Post
-    MAX_LIVE_POST_REACHED(HttpStatus.TOO_MANY_REQUESTS, "Live post limit reached")
-    ;
+    MAX_LIVE_POST_REACHED(HttpStatus.TOO_MANY_REQUESTS, "Live post limit reached"),
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "Post not found");
 
     private final HttpStatus status;
     private final String message;
