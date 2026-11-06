@@ -14,7 +14,8 @@ interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
     /** Pessimistic lock on the user row. NO KEY UPDATE means this won't block other FK calls */
     @Query(value = """
-        SELECT id FROM users
+        SELECT id
+        FROM users
         WHERE id = :id
         FOR NO KEY UPDATE
     """, nativeQuery = true)

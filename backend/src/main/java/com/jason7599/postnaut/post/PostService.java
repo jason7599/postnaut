@@ -104,7 +104,9 @@ public class PostService {
 
     @Transactional
     public void recordView(UUID postId, UUID userId) {
-        assertPostNotExpiredAndNotMine(postId, userId);
+        if (requireLivePost(postId).getPosterId().equals(userId)) {
+            throw new ApiException(ApiErrorCode.CANNOT_INTERACT_WITH_OWN_POST);
+        }
 
         // Technically TOCTOU. Post might've been deleted or expired after the check above
         // But still safe, as the insertion no-ops in those cases too.
@@ -115,7 +117,9 @@ public class PostService {
 
     @Transactional
     public void setReaction(UUID postId, UUID userId, @NotNull @Valid SetReactionRequest request) {
-        assertPostNotExpiredAndNotMine(postId, userId);
+        if (requireLivePost(postId).getPosterId().equals(userId)) {
+            throw new ApiException(ApiErrorCode.CANNOT_INTERACT_WITH_OWN_POST);
+        }
 
         // Again, TOCTOU, but same as above. Nothing breaks.
         if (postRepository.setReaction(postId, userId, request.reaction().getReactionvalue()) != 0) {
@@ -127,7 +131,15 @@ public class PostService {
         return postRepository.getRandomPost(viewerId);
     }
 
-    private void assertPostNotExpiredAndNotMine(UUID postId, UUID userId) {
+    public PostReplyContext getReplyContext(UUID postId) {
+        PostEntity post = requireLivePost(postId);
+        return new PostReplyContext(
+                post.getPosterId(),
+                post.isReplyEnabled()
+        );
+    }
+
+    private PostEntity requireLivePost(UUID postId) {
         PostEntity post = postRepository.findById(postId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.POST_NOT_FOUND));
 
@@ -136,8 +148,6 @@ public class PostService {
             throw new ApiException(ApiErrorCode.POST_NOT_FOUND);
         }
 
-        if (userId.equals(post.getPosterId())) {
-            throw new ApiException(ApiErrorCode.CANNOT_INTERACT_WITH_OWN_POST);
-        }
+        return post;
     }
 }

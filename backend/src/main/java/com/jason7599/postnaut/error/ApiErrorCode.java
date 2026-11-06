@@ -24,6 +24,13 @@ public enum ApiErrorCode {
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "Post not found"),
     CANNOT_INTERACT_WITH_OWN_POST(HttpStatus.FORBIDDEN, "Cannot interact with your own post"),
 
+    // Reply
+    REPLIES_DISABLED(HttpStatus.FORBIDDEN, "Replies are disabled for this post"),
+    REPLY_OUT_OF_TURN(HttpStatus.CONFLICT, "Not the user's turn to reply"),
+    REPLY_CHAIN_ALREADY_EXISTS(HttpStatus.CONFLICT, "Reply chain already exists"),
+    REPLY_CHAIN_NOT_FOUND(HttpStatus.NOT_FOUND, "Reply chain not found"),
+    REPLY_CLIENT_ID_CONFLICT(HttpStatus.CONFLICT, "Client ID conflict in reply")
+
     ;
 
     private final HttpStatus status;
