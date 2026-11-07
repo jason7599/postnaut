@@ -8,6 +8,39 @@ import java.util.UUID;
 
 interface ReplyRepository extends JpaRepository<ReplyEntity, ReplyEntity.Id> {
 
+    String REPLY_CHAIN_SELECT_HEAD = """
+        SELECT
+            rc.id,
+            rc.post_id          AS postId,
+            p.content           AS postContent,
+            rc.last_seq         AS lastSeq,
+    """;
+
+    String AS_POSTER_COLUMNS = """
+        rc.poster_last_read_seq AS myLastReadSeq,
+        rc.is_poster_turn       AS isMyTurn,
+    """;
+
+    String AS_REPLIER_COLUMNS = """
+        rc.replier_last_read_seq AS myLastReadSeq,
+        NOT rc.is_poster_turn    AS isMyTurn,
+    """;
+
+    String REPLY_CHAIN_SELECT_TAIL = """
+            NULL::text          AS friendNickname, -- TODO: fix later when i add friends
+            lr.content          AS lastReplyContent,
+            lr.created_at       AS lastReplyAt
+        FROM reply_chains rc
+        JOIN posts p    ON p.id = rc.post_id
+        JOIN replies lr ON lr.chain_id = rc.id AND lr.seq = rc.last_seq
+    """;
+
+    String KEYSET_PAGE = """
+            AND (lr.created_at, rc.id) < (:cursorAt, :cursorId)
+        ORDER BY lr.created_at DESC, rc.id DESC
+        LIMIT :limit
+    """;
+
     @Query(value = """
         INSERT INTO reply_chains (post_id, replier_id)
         VALUES (:postId, :replierId)
@@ -68,4 +101,17 @@ interface ReplyRepository extends JpaRepository<ReplyEntity, ReplyEntity.Id> {
         SELECT * FROM existing
     """, nativeQuery = true)
     Optional<ReplyEntity> appendReply(UUID chainId, String content, boolean fromPoster, UUID clientId);
+
+//    @Query(value = REPLY_CHAIN_SELECT_HEAD + AS_POSTER_COLUMNS + REPLY_CHAIN_SELECT_TAIL + """
+//    WHERE rc.post_id = :postId
+//    """ + KEYSET_PAGE, nativeQuery = true)
+//    List<ReplyChainResponse> getReplyChainsAsPoster(
+//            UUID postId, Instant cursorAt, UUID cursorId, int limit);
+//
+//    @Query(value = REPLY_CHAIN_SELECT_HEAD + AS_REPLIER_COLUMNS + REPLY_CHAIN_SELECT_TAIL + """
+//    WHERE rc.replier_id = :replierId
+//      AND p.expires_at > NOW()
+//    """ + KEYSET_PAGE, nativeQuery = true)
+//    List<ReplyChainResponse> getReplyChainsAsReplier(
+//            UUID replierId, Instant cursorAt, UUID cursorId, int limit);
 }

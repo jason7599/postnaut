@@ -130,7 +130,7 @@ class PostFlowTest extends IntegrationTest {
         PageResponse<MyPostResponse> page = read(res, new TypeReference<>() {});
 
         assertThat(page.items()).hasSize(postCount);
-        assertThat(page.hasMore()).isFalse();
+        assertThat(page.nextCursor()).isNull();
 
         for (int i = 0; i < postCount; i++) {
             String expected = String.valueOf(postCount - 1 - i);

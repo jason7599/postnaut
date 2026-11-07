@@ -22,9 +22,9 @@ import tools.jackson.core.type.TypeReference;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest         // starts the full spring application
 @AutoConfigureMockMvc   // mockmvc to send fake HTTP requests without opening a real port
 @Import({TestClient.class, UserFixtures.class})
+@SpringBootTest(properties = "app.frontend-origin=http://localhost:5173")
 public abstract class IntegrationTest {
 
     @ServiceConnection  // Points my app's database config at this container

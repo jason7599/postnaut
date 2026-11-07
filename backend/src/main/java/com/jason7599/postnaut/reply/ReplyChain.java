@@ -7,6 +7,7 @@ record ReplyChain(
     UUID postId,
     UUID replierId,
     int lastSeq,
+    boolean isPosterTurn,
     int posterLastReadSeq,
     int replierLastReadSeq
 ) {

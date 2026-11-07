@@ -21,6 +21,7 @@ public enum ApiErrorCode {
 
     // Post
     MAX_LIVE_POST_REACHED(HttpStatus.TOO_MANY_REQUESTS, "Live post limit reached"),
+    NOT_MY_POST(HttpStatus.FORBIDDEN, "Only the post author can perform this action"),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "Post not found"),
     CANNOT_INTERACT_WITH_OWN_POST(HttpStatus.FORBIDDEN, "Cannot interact with your own post"),
 

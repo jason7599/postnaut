@@ -50,6 +50,7 @@ CREATE TABLE reply_chains (
     post_id                 UUID    NOT NULL,
     replier_id              UUID    NOT NULL,
     last_seq                INT     NOT NULL DEFAULT 0,
+    is_poster_turn          BOOLEAN GENERATED ALWAYS AS (last_seq % 2 = 1),
     poster_last_read_seq    INT     NOT NULL DEFAULT 0,
     replier_last_read_seq   INT     NOT NULL DEFAULT 0,
 

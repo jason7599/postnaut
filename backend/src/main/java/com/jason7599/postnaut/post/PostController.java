@@ -2,11 +2,10 @@ package com.jason7599.postnaut.post;
 
 import com.jason7599.postnaut.auth.AuthUser;
 import com.jason7599.postnaut.common.PageResponse;
-import com.jason7599.postnaut.post.dto.CreatePostRequest;
-import com.jason7599.postnaut.post.dto.MyPostResponse;
-import com.jason7599.postnaut.post.dto.RandomPostResponse;
-import com.jason7599.postnaut.post.dto.SetReactionRequest;
+import com.jason7599.postnaut.post.dto.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +34,11 @@ class PostController {
     PageResponse<MyPostResponse> getMyPosts(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(required = false) UUID cursor,
-            @RequestParam(defaultValue = "ALL") PostStatusFilter filter
+            @RequestParam(defaultValue = "ALL") PostStatusFilter status,
+            @RequestParam(defaultValue = "NEWEST") MyPostSort sort,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size
     ) {
-        return postService.getUserPosts(authUser.userId(), cursor, filter);
+        return postService.getUserPosts(authUser.userId(), cursor, status, sort, size);
     }
 
     @PutMapping("/{postId}/view")

@@ -5,6 +5,7 @@ import com.jason7599.postnaut.error.ApiException;
 import com.jason7599.postnaut.post.PostReplyContext;
 import com.jason7599.postnaut.post.PostService;
 import com.jason7599.postnaut.reply.dto.CreateReplyRequest;
+import com.jason7599.postnaut.reply.dto.ReplyChainResponse;
 import com.jason7599.postnaut.reply.dto.ReplyResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -31,7 +33,7 @@ public class ReplyService {
      * Therefore, userId must not be the poster's id.
      */
     @Transactional
-    public ReplyResponse createNewReply(
+    public ReplyResponse startReplyChain(
             UUID postId,
             UUID userId,
             @Valid CreateReplyRequest request
@@ -119,6 +121,26 @@ public class ReplyService {
 
         return toReplyResponse(inserted);
     }
+
+    @Transactional(readOnly = true)
+    public List<ReplyChainResponse> getReplyChainsOnMyPost(UUID postId, UUID userId) {
+        // Thought about throwing POST_NOT_FOUND to guard against leakage,
+        // but post_ids aren't much a secret anyway. So this just makes the intention clearer
+        if (!postService.getReplyContext(postId).posterId().equals(userId)) {
+            throw new ApiException(ApiErrorCode.NOT_MY_POST);
+        }
+
+        return List.of();
+//        return replyRepository.getReplyChainsOnMyPost(postId);
+    }
+
+    /** Reply chains that I started */
+    @Transactional(readOnly = true)
+    public List<ReplyChainResponse> getReplyChainsAsReplier(UUID userId) {
+//        return replyRepository.getReplyChainsAsReplier(userId);
+        return List.of();
+    }
+
 
     public static boolean isPosterTurn(int replySeq) {
         return replySeq % 2 == 1;

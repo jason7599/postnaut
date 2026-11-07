@@ -3,21 +3,22 @@ package com.jason7599.postnaut.post;
 import com.jason7599.postnaut.common.PageResponse;
 import com.jason7599.postnaut.error.ApiErrorCode;
 import com.jason7599.postnaut.error.ApiException;
-import com.jason7599.postnaut.post.dto.CreatePostRequest;
-import com.jason7599.postnaut.post.dto.MyPostResponse;
-import com.jason7599.postnaut.post.dto.RandomPostResponse;
-import com.jason7599.postnaut.post.dto.SetReactionRequest;
+import com.jason7599.postnaut.post.dto.*;
 import com.jason7599.postnaut.user.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,9 +31,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PostService {
 
-    private static final int MY_POSTS_PAGE_SIZE = 50;
-
     private final PostRepository postRepository;
+    private final MyPostViewRepository myPostViewRepository;
 
     private final UserService userService;
 
@@ -42,8 +42,8 @@ public class PostService {
         // Verified that without this lock, write skews actually happen!
         userService.lock(userId);
 
-        MyPostResponse existing = postRepository.getUserPostByPosterIdAndClientId(userId, request.clientId()).orElse(null);
-        if (existing != null) return existing;
+        MyPostView existing = myPostViewRepository.findByPosterIdAndClientId(userId, request.clientId()).orElse(null);
+        if (existing != null) return toMyPostResponse(existing);
 
         Instant now = Instant.now();
         long liveCount = postRepository.countByPosterIdAndExpiresAtAfter(userId, now);
@@ -82,24 +82,29 @@ public class PostService {
         );
     }
 
-    public PageResponse<MyPostResponse> getUserPosts(UUID userId, UUID cursor, PostStatusFilter filter) {
-        // null cursor: initial fetch. Assign max uuid
-        if (cursor == null) cursor = new UUID(-1L, -1L);
+    public PageResponse<MyPostResponse> getUserPosts(UUID userId, UUID cursor, PostStatusFilter status, MyPostSort myPostSort, int pageSize) {
+        ScrollPosition pos = cursor == null
+                ? ScrollPosition.keyset() // initial scroll
+                : ScrollPosition.forward(Map.of("id", cursor));
 
-        List<MyPostResponse> items = postRepository.getUserPosts(
-                userId,
-                cursor,
-                filter != PostStatusFilter.EXPIRED,
-                filter != PostStatusFilter.LIVE,
-                MY_POSTS_PAGE_SIZE + 1
-        );
+        Sort sort = myPostSort == MyPostSort.NEWEST
+                ? Sort.by("id").descending()
+                : Sort.by("id").ascending();
 
-        boolean hasMore = items.size() > MY_POSTS_PAGE_SIZE;
-        if (hasMore) {
-            items = items.subList(0, MY_POSTS_PAGE_SIZE);
+        Limit limit = Limit.of(pageSize);
+
+        Window<MyPostView> window;
+
+        if (status == PostStatusFilter.ALL) window = myPostViewRepository.findByPosterId(userId, pos, sort, limit);
+        else {
+            window = myPostViewRepository.findByPosterIdAndIsExpired(userId, status == PostStatusFilter.EXPIRED, pos, sort, limit);
         }
 
-        return new PageResponse<>(items, hasMore);
+        return PageResponse.fromWindow(
+                window,
+                this::toMyPostResponse,
+                MyPostView::getId
+        );
     }
 
     @Transactional
@@ -149,5 +154,22 @@ public class PostService {
         }
 
         return post;
+    }
+
+    private MyPostResponse toMyPostResponse(MyPostView v) {
+        return new MyPostResponse(
+                v.getId(),
+                v.getContent(),
+                v.isRevealToFriends(),
+                v.isReplyEnabled(),
+                v.getCreatedAt(),
+                v.getExpiresAt(),
+                v.getViewCount(),
+                v.getLikeCount(),
+                v.getDislikeCount(),
+                v.getReplyChainCount(),
+                v.getReplyChainCount(),
+                v.isExpired()
+        );
     }
 }
