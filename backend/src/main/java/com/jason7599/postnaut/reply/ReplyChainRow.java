@@ -2,7 +2,7 @@ package com.jason7599.postnaut.reply;
 
 import java.util.UUID;
 
-record ReplyChain(
+record ReplyChainRow(
     UUID id,
     UUID postId,
     UUID replierId,

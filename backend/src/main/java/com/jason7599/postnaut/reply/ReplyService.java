@@ -5,7 +5,8 @@ import com.jason7599.postnaut.error.ApiException;
 import com.jason7599.postnaut.post.PostReplyContext;
 import com.jason7599.postnaut.post.PostService;
 import com.jason7599.postnaut.reply.dto.CreateReplyRequest;
-import com.jason7599.postnaut.reply.dto.ReplyChainResponse;
+import com.jason7599.postnaut.reply.dto.PosterReplyChainResponse;
+import com.jason7599.postnaut.reply.dto.ReplierReplyChainResponse;
 import com.jason7599.postnaut.reply.dto.ReplyResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class ReplyService {
 
     private final ReplyRepository replyRepository;
+    private final ReplyChainViewRepository replyChainViewRepository;
 
     private final PostService postService;
 
@@ -50,7 +52,7 @@ public class ReplyService {
         UUID chainId = replyRepository.upsertReplyChain(postId, userId);
 
         // *************** LOCK ***************
-        ReplyChain replyChain = replyRepository.lockReplyChain(chainId)
+        ReplyChainRow replyChain = replyRepository.lockReplyChain(chainId)
                 .orElseThrow(() -> new IllegalStateException("chain not found after upsert " + chainId));
 
         // Non-empty chain
@@ -87,7 +89,7 @@ public class ReplyService {
             @Valid CreateReplyRequest request
     ) {
         // ************ LOCK ************
-        ReplyChain replyChain = replyRepository.lockReplyChain(chainId)
+        ReplyChainRow replyChain = replyRepository.lockReplyChain(chainId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.REPLY_CHAIN_NOT_FOUND));
 
         PostReplyContext replyContext = postService.getReplyContext(replyChain.postId());
@@ -123,24 +125,40 @@ public class ReplyService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReplyChainResponse> getReplyChainsOnMyPost(UUID postId, UUID userId) {
-        // Thought about throwing POST_NOT_FOUND to guard against leakage,
-        // but post_ids aren't much a secret anyway. So this just makes the intention clearer
-        if (!postService.getReplyContext(postId).posterId().equals(userId)) {
-            throw new ApiException(ApiErrorCode.NOT_MY_POST);
-        }
+    public List<PosterReplyChainResponse> getReplyChainsOnMyPost(UUID postId, UUID userId) {
+        postService.requireOwnPost(postId, userId);
 
-        return List.of();
-//        return replyRepository.getReplyChainsOnMyPost(postId);
+        return replyChainViewRepository.findTop1000ByPostIdOrderByLastReplyAtDescIdDesc(postId)
+                .stream()
+                .map(v -> new PosterReplyChainResponse(
+                        v.getId(),
+                        v.getLastSeq(),
+                        v.isPosterHasUnread(),
+                        v.isPosterTurn(),
+                        v.getReplierNameForPoster(),
+                        v.getLastReplyContent(),
+                        v.getLastReplyAt()
+                ))
+                .toList();
     }
 
-    /** Reply chains that I started */
+    /** Reply chains that I started, and is my turn */
     @Transactional(readOnly = true)
-    public List<ReplyChainResponse> getReplyChainsAsReplier(UUID userId) {
-//        return replyRepository.getReplyChainsAsReplier(userId);
-        return List.of();
+    public List<ReplierReplyChainResponse> getReplierInbox(UUID userId) {
+        return replyChainViewRepository.getReplierInbox(userId)
+                .stream()
+                .map(v -> new ReplierReplyChainResponse(
+                        v.getId(),
+                        v.getLastSeq(),
+                        v.isReplierHasUnread(),
+                        v.getPostContent(),
+                        v.getPosterNameForReplier(),
+                        v.getPostExpiresAt(),
+                        v.getLastReplyContent(),
+                        v.getLastReplyAt()
+                ))
+                .toList();
     }
-
 
     public static boolean isPosterTurn(int replySeq) {
         return replySeq % 2 == 1;

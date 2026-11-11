@@ -136,6 +136,15 @@ public class PostService {
         return postRepository.getRandomPost(viewerId);
     }
 
+    public void requireOwnPost(UUID postId, UUID userId) {
+        PostEntity post = postRepository.findById(postId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.POST_NOT_FOUND));
+
+        if (!post.getPosterId().equals(userId)) {
+            throw new ApiException(ApiErrorCode.NOT_MY_POST);
+        }
+    }
+
     public PostReplyContext getReplyContext(UUID postId) {
         PostEntity post = requireLivePost(postId);
         return new PostReplyContext(

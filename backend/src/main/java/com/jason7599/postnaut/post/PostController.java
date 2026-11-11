@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/posts")
 @RequiredArgsConstructor
 class PostController {
 
@@ -30,7 +29,7 @@ class PostController {
         return postService.createPost(authUser.userId(), request);
     }
 
-    @GetMapping("/mine")
+    @GetMapping("/me/posts")
     PageResponse<MyPostResponse> getMyPosts(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(required = false) UUID cursor,
@@ -41,7 +40,7 @@ class PostController {
         return postService.getUserPosts(authUser.userId(), cursor, status, sort, size);
     }
 
-    @PutMapping("/{postId}/view")
+    @PutMapping("/posts/{postId}/view")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void recordView(
             @AuthenticationPrincipal AuthUser authUser,
@@ -50,7 +49,7 @@ class PostController {
         postService.recordView(postId, authUser.userId());
     }
 
-    @PutMapping("/{postId}/reaction")
+    @PutMapping("/posts/{postId}/reaction")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void setReaction(
             @AuthenticationPrincipal AuthUser authUser,
@@ -60,7 +59,7 @@ class PostController {
         postService.setReaction(postId, authUser.userId(), request);
     }
 
-    @GetMapping("/random")
+    @GetMapping("/posts/random")
     ResponseEntity<RandomPostResponse> getRandom(@AuthenticationPrincipal AuthUser authUser) {
         return postService.fetchRandomPost(authUser.userId())
                 .map(ResponseEntity::ok)

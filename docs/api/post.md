@@ -71,7 +71,7 @@ Retrying with the same `clientId` returns the original post with the same status
 Returns a page of the current user's posts, including expired posts.
 
 ```
-GET /api/posts/mine
+GET /api/me/posts
 ```
 
 Requires a valid session cookie.

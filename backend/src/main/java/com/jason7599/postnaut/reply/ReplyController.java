@@ -2,7 +2,8 @@ package com.jason7599.postnaut.reply;
 
 import com.jason7599.postnaut.auth.AuthUser;
 import com.jason7599.postnaut.reply.dto.CreateReplyRequest;
-import com.jason7599.postnaut.reply.dto.ReplyChainResponse;
+import com.jason7599.postnaut.reply.dto.PosterReplyChainResponse;
+import com.jason7599.postnaut.reply.dto.ReplierReplyChainResponse;
 import com.jason7599.postnaut.reply.dto.ReplyResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +41,15 @@ class ReplyController {
     }
 
     @GetMapping("/posts/{postId}/reply-chains")
-    List<ReplyChainResponse> getReplyChainsOnMyPost(
+    List<PosterReplyChainResponse> getReplyChainsOnMyPost(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable UUID postId
     ) {
         return replyService.getReplyChainsOnMyPost(postId, authUser.userId());
     }
 
-    @GetMapping("/reply-chains/mine")
-    List<ReplyChainResponse> getReplyChainsAsReplier(@AuthenticationPrincipal AuthUser authUser) {
-        return replyService.getReplyChainsAsReplier(authUser.userId());
+    @GetMapping("/me/reply-inbox")
+    List<ReplierReplyChainResponse> getReplierInbox(@AuthenticationPrincipal AuthUser authUser) {
+        return replyService.getReplierInbox(authUser.userId());
     }
 }
